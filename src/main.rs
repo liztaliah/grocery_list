@@ -6,10 +6,10 @@ struct Item {
 }
 
 impl Item {
-    pub fn add(&self, number: &i32, item_name: &str) {
+    pub fn add(&self, name: &str, completed: i32) {
         let connection = Connection::open(&self.file_name).unwrap();
-        connection.execute("insert into items (number, item_name) values (?1, ?2)",
-            (number, item_name)).unwrap();
+        connection.execute("insert into items (name, completed) values (?1, ?2)",
+            (name, completed)).unwrap();
     }
 }
 
@@ -18,5 +18,5 @@ fn main() {
         file_name: String::from("./data/data.db"),
     };
 
-    db.add(&3, "pair");
+    db.add("pair", 0);
 }
