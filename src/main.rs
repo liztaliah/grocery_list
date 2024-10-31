@@ -1,5 +1,11 @@
 use rusqlite::{Connection, Result};
+use clap::Parser;
 
+#[derive(Parser)]
+struct Cli {
+    #[arg(short, long, help = "add new item/items")]
+    add: Vec<String>,
+}
 #[derive(Debug)]
 struct Items {
     file_name: String,
@@ -34,16 +40,22 @@ fn list(items: Items) -> Result<()> {
     })?;
 
     for item in item_iter {
-        println!("Found Item {:?}", item.unwrap());
+        println!("{}: {}", item.as_ref().unwrap().id, item.as_ref().unwrap().name);
     }
     Ok(())
 }
 fn main() -> Result<()> {
+    let cli =Cli::parse();
     let db = Items {
         file_name: String::from("./data/data.db"),
     };
 
-    //db.add("grapefruit", 0);
+    if cli.add.len() > 0 {
+        for items in cli.add.iter() {
+            println!("{}", items);
+            db.add(items, 0);
+        }
+    }
     list(db)?;
     Ok(())
 }
