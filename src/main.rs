@@ -5,7 +5,10 @@ use clap::Parser;
 struct Cli {
     #[arg(short, long, help = "add new item/items")]
     add: Vec<String>,
+    #[arg(short, long, help = "mark item as complete")]
+    complete: i32 
 }
+
 #[derive(Debug)]
 struct Items {
     file_name: String,
