@@ -6,7 +6,7 @@ struct Cli {
     #[arg(short, long, help = "add new item/items")]
     add: Vec<String>,
     #[arg(short, long, help = "mark item as complete")]
-    complete: i32 
+    complete: Vec<String> 
 }
 
 #[derive(Debug)]
@@ -27,6 +27,12 @@ impl Items {
         connection.execute("insert into items (name, completed) values (?1, ?2)",
             (name, completed)).unwrap();
     }
+    
+    pub fn mark_off(&self, markoff_index: i32, completed: &i32) {
+        let connection = Connection::open(&self.file_name).unwrap();
+        connection.execute("update items set (completed) = (?2) where id = (?1)", 
+        (markoff_index, completed)).unwrap();
+    }
 }
 
 fn list(items: Items) -> Result<()> {
@@ -43,7 +49,10 @@ fn list(items: Items) -> Result<()> {
     })?;
 
     for item in item_iter {
-        println!("{}: {}", item.as_ref().unwrap().id, item.as_ref().unwrap().name);
+        println!("{}: {} - {}", 
+        item.as_ref().unwrap().id, 
+        item.as_ref().unwrap().name,
+        item.as_ref().unwrap().completed);
     }
     Ok(())
 }
