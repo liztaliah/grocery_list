@@ -6,7 +6,9 @@ struct Cli {
     #[arg(short, long, help = "add new item/items")]
     add: Vec<String>,
     #[arg(short, long, help = "mark item as complete")]
-    complete: Vec<String> 
+    mark: Vec<i32> ,
+    #[arg(short, long, help = "uncheck all items", action = clap::ArgAction::Count)]
+    unmark: u8
 }
 
 #[derive(Debug)]
@@ -25,13 +27,18 @@ impl Items {
     pub fn add(&self, name: &str, completed: i32) {
         let connection = Connection::open(&self.file_name).unwrap();
         connection.execute("insert into items (name, completed) values (?1, ?2)",
-            (name, completed)).unwrap();
+        (name, completed)).unwrap();
     }
     
-    pub fn mark_off(&self, markoff_index: i32, completed: &i32) {
+    pub fn mark_off(&self, markoff_index: &i32, completed: i32) {
         let connection = Connection::open(&self.file_name).unwrap();
-        connection.execute("update items set (completed) = (?2) where id = (?1)", 
+        connection.execute("update items set completed = (?2) where id = (?1)", 
         (markoff_index, completed)).unwrap();
+    }
+    
+    pub fn uncheck(&self) {
+        let connection = Connection::open(&self.file_name).unwrap();
+        connection.execute("update items set completed = 0",()).unwrap();
     }
 }
 
@@ -62,10 +69,17 @@ fn main() -> Result<()> {
         file_name: String::from("./data/data.db"),
     };
 
+    if cli.unmark == 1 {db.uncheck()};
+    
     if cli.add.len() > 0 {
         for items in cli.add.iter() {
             println!("{}", items);
             db.add(items, 0);
+        }
+    }
+    if cli.mark.len() > 0 {
+        for items in cli.mark.iter() {
+            db.mark_off(items, 1);
         }
     }
     list(db)?;
