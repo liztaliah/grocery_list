@@ -6,9 +6,11 @@ struct Cli {
     #[arg(short, long, help = "add new item/items")]
     add: Vec<String>,
     #[arg(short, long, help = "mark item as complete")]
-    mark: Vec<i32> ,
+    mark: Vec<i32>,
     #[arg(short, long, help = "uncheck all items", action = clap::ArgAction::Count)]
-    unmark: u8
+    unmark: u8,
+    #[arg(short, long, help = "clear items from list", action = clap::ArgAction::Count)]
+    clear: u8
 }
 
 #[derive(Debug)]
@@ -40,6 +42,13 @@ impl Items {
         let connection = Connection::open(&self.file_name).unwrap();
         connection.execute("update items set completed = 0",()).unwrap();
     }
+    
+    pub fn clear(&self) {
+        let connection = Connection::open(&self.file_name).unwrap();
+        connection.execute("delete from items;
+        update sqlite_sequence set seq=0 where name='items'",()).unwrap();
+        println!("List cleared successfully!");
+    }
 }
 
 fn list(items: Items) -> Result<()> {
@@ -70,6 +79,7 @@ fn main() -> Result<()> {
     };
 
     if cli.unmark == 1 {db.uncheck()};
+    if cli.clear == 1 {db.clear()};
     
     if cli.add.len() > 0 {
         for items in cli.add.iter() {
